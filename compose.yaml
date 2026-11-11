@@ -1,0 +1,42 @@
+services: 
+  php-builtin-server:
+    build:
+      dockerfile: ./Dockerfile
+    ports:
+      - 9000:9000
+    volumes:
+      - $PWD/src:/var/www/html:ro
+    command: "php -S 0.0.0.0:9000 -t /var/www/html"
+    networks:
+      - backend
+      - default
+  php-apache-server:
+    build:
+      dockerfile: ./Dockerfile # Image uses php:8.2-apache
+    ports:
+      - 8000:80
+    volumes:
+      - $PWD/src:/var/www/html:ro
+    networks:
+      - backend
+      - default
+  sql-database:
+    image: docker.io/mariadb
+    # image: docker.io/mysql # Not working with defualt Podman config?
+    restart: always
+    ports:
+      - 6603:3306
+    volumes:
+      - $PWD/data/db:/var/lib/mysql
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=super-secret-password
+      - MYSQL_DATABASE=defaultdbname
+    networks:
+      - backend
+      - default
+    
+
+networks:
+  backend:
+    driver: bridge
